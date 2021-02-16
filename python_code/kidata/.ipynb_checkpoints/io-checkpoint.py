@@ -21,7 +21,7 @@ def get_datafld():
         - NoiseTDanalyse: the results of the noise post-processing.
             - TDresults.mat: same structure as the MATLAB routine for PdV.'''
     
-    datafld = os.path.abspath(os.path.dirname(__file__) + '/../../data/') + '/' 
+    datafld = os.path.abspath(os.path.dirname(__file__) + '/../../data/') + '/'
     # must end with '/' to work in all other functions
     assert glob.glob(datafld), 'data folder not found'
     return datafld 
