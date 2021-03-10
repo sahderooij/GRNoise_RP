@@ -34,19 +34,15 @@ set(gcf,'Color','White')
 handles=findobj(gcf,'Type','axes');
 for n = 1 : length(handles)
     set(handles(n),'FontSize',FT)
-    %ax = gca;
     ax = handles(n);
     ax.YLabel.FontSize = FT+2;ax.XLabel.FontSize = FT+2;
 end
 set(gcf,'PaperPositionMode','auto');
 handles=findobj(gcf,'Type','legend');
 for n = 1 : length(handles)
-    %h = legend;
-    %set(h,'FontSize',FT)
     set(handles(n),'FontSize',FT)
 end
-%h=get(gcf,'children');
-%set(h,'visible','off') SWITCH OF LEGEND
+
 % optional save
 if ischar(fn)
     if saveonlypng ~= 1

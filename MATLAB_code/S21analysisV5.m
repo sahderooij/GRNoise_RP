@@ -232,9 +232,9 @@ S21subdir='/S21/2D';
 %is located.
 if nargin==0
     ChipInfo.path = ...                                         %Root path containing the measurement data.
-    '../data/LT165';
+    '../data/A1A2_test';
     ChipInfo.ResonatorInfoFile = ...                            %Name of the file containing resonator information
-        [ChipInfo.path '\KIDparam.txt'];
+        [ChipInfo.path '/KIDparam.txt'];
     ChipInfo.FilmTc = 1.255;                                    %Transition temperature measured for the film [K].
 	ChipInfo.material = 'Al';                                %Material of which the resonator active area is made.
     ChipInfo.Thickness = 0.050;                                  %Thickness of the resonator active area [um].
@@ -246,7 +246,7 @@ end
 %==========================================================================
 global TCfrac FITF0 InterpolatPhaseref
 stopoffset = ones(30).*0;    %Removes the highest temperatures from the data analysis. The index correponds to KID number.
-                  %Used to stop before the measurement has lost any KID due to dipjumping, extremely shallow dips, or similar.
+                             %Used to stop before the measurement has lost any KID due to dipjumping, extremely shallow dips, or similar.
 showallplots = 0; %IF 1 the T dependences will be shown in plot for all (KID,P) combinations.
                   %IF 0 [default], only for the minimum read-out power the T dependence will be shown on screen.
                   %The other figures will be save and closed.
@@ -275,7 +275,7 @@ addpath([pwd,filesep,'subroutines']);
 %==========================================================================
 fid=fopen(ChipInfo.ResonatorInfoFile);
 if fid <0
-    error(['Cannor find ' ChipInfo.ResonatorInfoFile] )
+    error(['Cannot find ' ChipInfo.ResonatorInfoFile] )
 end
 designvalues=cell2mat(textscan(fid,'%f %f %f %f'));%kidID F0 Q active area in um^2
 designvalues(:,4) = designvalues(:,4)*ChipInfo.Linewidth;
@@ -446,7 +446,6 @@ elseif NumberOfS21Files == length(KIDnumbers)
         plotTdependence(n,KID,fitTbase{n}(:,:),transformation{n}(:,:),KID(n).KIDnumber)
     end
 else
-%     save([S21path,'HybridsS21.mat'])
     %Mixing with Power sweep. A slightly different method will be used to
     %plot only the lowest power to screen for each resonator.
     for n=1:length(KIDnumbers)
@@ -461,10 +460,8 @@ end
 %==========================================================================
 % Workspace saving and wrap-up
 %==========================================================================
-% clear up nonsense variables.
 clear NumberOfS21Files RawS21files S21subdir ans fid info n showallplots
-% Save the matlab workspace
-% save([S21path,'ResponseS21.mat'])
+
 %Remove Path containing Subroutines from pathlist.
 rmpath([pwd,filesep,'subroutines']);
 %==========================================================================
@@ -510,7 +507,6 @@ function [data,Temperature,Power] = import_S21data(file,stopoffset)
 %==========================================================================
 
 %Matlab textscan routine hard to understand (Reinier Janssen, 6-8-2012).
-%Leave the code as is as it works. It just reads the data.
 
 %==========================================================================
 [tempdata,Temperature,Power,~] = import_data(file);
@@ -548,7 +544,7 @@ fprintf(['Selected temperatures range from ' num2str(Temperature(1,1)) ' to ' nu
 %==========================================================================
 end
 
-function [KID,transformation,fitTbase] = findparameters (n,KID)
+function [KID,transformation,fitTbase] = findparameters(n,KID)
 %This function analyses the S21 data of all temperatures individually. For
 %each temperature it does the following:
 %1) Normalize |S21|(dB) to zero and convert it to magnitude space
@@ -644,16 +640,6 @@ for p=1:Ntemperatures
         [~,F0index] = min(S21data{p}(:,2));
         phaseres(p) = S21data{p}(F0index,3);
     end
-    % Figure present for testing purposes
-    if FITF0 == -1
-        figure(KID(n).KIDnumber*100+p)
-        clf
-        hold on
-        plot(S21data{p}(:,1),S21data{p}(:,3),'b-')
-        plot(S21data{p}(:,1),unwrap(S21data{p}(:,3)),'k-')
-        plot(fres(p),phaseres(p),'ro')
-        hold off
-    end
 end
 % Use the mean rotation to avoid problems for deepest KIDs
 rotation = mean(phaseres);
@@ -673,13 +659,7 @@ for p=1:Ntemperatures
     S21Imag{p} = S21data{p}(:,2).*sin(newphase{p}(:)); %Calculate Im{S21} with the calibrated phases
     
      %Shift the S21 circle to center of the complex plane.
-     OffsetReal(p) = (max(S21Real{p}(:))+10.^(S21min(1)/20))/2; %Q: Why not min(S21Real{1}(:)) ??
-     %The use of S21min(1) means points far off resonance end up in the same
-     %location (0.5,0.0)
-     %ALTERNATIVE (Q: Why not this?):
-     %OffsetReal(p)=(max(S21Real{p}(:))+min(S21Real{p}(:)))/2;
-     %This means all circles are centered at (0,0) but not necessarily with
-     %points far off-resonance in the same location (radius different, phase is equal)
+     OffsetReal(p) = (max(S21Real{p}(:))+10.^(S21min(1)/20))/2; 
      S21Real{p}(:)=S21Real{p}(:)-OffsetReal(p);
     
     %Update the S21data with calibrated S21 circle.
@@ -693,7 +673,6 @@ KID(n).S21data = S21data;
 %Save the transformation for the use in plotting.
 transformation(1)=rotation; %Mean phase correction [radians]
 transformation(2)=mean(OffsetReal); %Mean offset correction.
-%transformation(2)=OffsetReal(end); %Highest T used as offset correction.
 
 %==========================================================================
 %END OF findparameters SUBROUTINE
@@ -873,19 +852,6 @@ Response(:,4) = unwrap(Response(:,4));
 Response(:,5) = Response(:,3) - Response(1,3); %R{S21(T)} - R{S21(T0)} @f0(T0)
 Response(:,6) = Response(:,4) - Response(1,4); %Theta{S21(T)} - Theta{S21(T)} @f0(T0)
 
-% Figure present for testing purposes
-if FITF0 == -1
-    figure(KID(n).KIDnumber*100)
-    clf
-    hold on
-    plot(T,Response(:,4),'b-')
-    plot(T,Response(:,6),'b--')
-    xlabel('T [K]')
-    ylabel('Phase [rad]')
-    legend('\theta(S21(T)) @F0(T0)','\delta\theta(S21(T)) @F0(T0)')
-    hold off
-end
-
 %Save the interesting values to the KID struct
 KID(n).ReImF0 = Response(:,1:2);
 KID(n).Response = Response(:,5:6);
@@ -960,7 +926,6 @@ for n=1:length(KID)
     
     %Write the base temperature S21 to csv file
     resultsfile = [RootName,'S21lowT.csv'];
-%     WriteSRONcsv(resultsfile,KIDS21lowT,LowTheader,'%.12e');
     
     %Construct a T dependent parameter array
     TdepParameters = zeros(length(KID(n).Temperature),length(DepTheader));
@@ -1000,20 +965,12 @@ for n=1:length(KID)
     AllKIDlowToverview(n,:)=TdepParameters(1,:);
 end
 
-% %First write the old overview file for backwards compatibility 
-% %(Potentially to be removed later)
-% overviewfile = [S21path,'all_Tdep.csv']; %save all properties of the base T in one file
-% WriteSRONcsv(overviewfile,AllKIDlowToverview,DepTheader,'%.12e');
-
 % %Identify the indexes of interesting parameters in TdepParameters.
 ParamIndexes = [1,2,6,23,... %KIDID, T0, Fres, Fdesign
     3,5,4,24,... %Q's
     8,9,14,19,... %Powers and responsivities
     22,16,26,25]; %Review utilities
 KIDParameters = AllKIDlowToverview(:,ParamIndexes);
-
-% overviewfile = [MeasurementPath,filesep,'Summary_S21_Tdep.csv'];
-% WriteSRONcsv(overviewfile,KIDParameters,SummaryHeader,'%.12e');
 
 %==========================================================================
 %END OF savethedata SUBROUTINE
@@ -1198,11 +1155,6 @@ hold on
 %Plot the first axis containing the phase response
 set(AX9_1,'Box','off','YColor','b','Ylim',Ylims(:,1))
 ylabel(AX9_1,'\delta \theta / \delta N_{qp} [rad/10^6 qp]')
-%Plot in these axes stuff for the legend
-%LegendM1 = line(KID(n).Temperature,KID(n).ResponsivityM1(:,1)-1e6,'Parent',AX9_1); %Phase responsivity by FIT
-%LegendM2 = line(KID(n).Temperature,-1*KID(n).ResponsivityM2(:,1)-1e6,'Parent',AX9_1); %Phase responsivity by numerical differentiation
-%set(LegendM1,'LineStyle','-','Marker','o','Color','k')
-%set(LegendM2,'LineStyle','--','Marker','.','Color','k')
 %Plot in these axes the Phase Responsivity
 PhaseM1 = line(KID(n).Temperature,KID(n).ResponsivityM1(:,1)*1e6,'Parent',AX9_1); %Phase responsivity by FIT
 PhaseM2 = line(KID(n).Temperature,-1*KID(n).ResponsivityM2(:,1)*1e6,'Parent',AX9_1); %Phase responsivity by numerical differentiation
@@ -1279,8 +1231,6 @@ hold off
 
 
 %SAVE the figure
-%Figfile=[KID(n).filename(1:end-3),'fig'];
-%saveas(gcf,Figfile,'fig')
 Figfile=[KID(n).filename(1:end-3)];
 MakeGoodFigure(15,17,13,Figfile,1);
 

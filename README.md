@@ -2,9 +2,11 @@
 
 ### *Strong Reduction of Quasiparticle Fluctuations in a Superconductor due to Decoupling of the Quasiparticle Number and Lifetime*
 
-*[doi to paper]*
+**[ arXiv:2103.04777](https://arxiv.org/abs/2103.04777)**
 
 This is a package of data and code to reproduce the results of the paper by S. A. H. de Rooij et al. (2021). The code in this package is also on [github](https://github.com/sahderooij/GRNoise_RP). The python code is a scaled down fork of [this repository](https://github.com/sahderooij/MKID-models). This document will explain the content of the package and the steps needed to reproduce the results. 
+
+For any questions or remarks, contact: [s.a.h.de.rooij@sron.nl](mailto:s.a.h.de.rooij@sron.nl)
 
 ## Software prerequisites
 
@@ -49,8 +51,11 @@ The Jupyter notebooks in the **notebooks** directory can be directly executed to
 
 In order for these to work, the raw data needs to be processed. The processed data files are present in the package, so that the notebooks work right away, but in order to reproduce these files two analyses must be done:
 
-1. The PSDs need to be calculated from the raw TD noise files. This is done via the function *kidata.noise.do_TDanalysis()*, which takes the chipnumber (e.g. 'A1A2') as only required argument. This must be done for each chip seperately. The calculated PSDs are stored in **data/NoiseTDanalyse/TDresults.mat**
-2. The KID parameters from the $S_{21}$ measurement need to be calculated. This is done with the MATLAB script *S21analysisV5.m* in the **MATLAB_code** folder. In order to run this properly, the *ChipInfo* variable should be set correctly at the top of the .m-file. This includes: Chipnumber in the path, $T_c$ and Al thickness and width. The scripts loads the *KIDparam.txt*- file, which is in the data folder of the chip, for the Al length for each KID. Furthermore, to calculate the correct responsivities, the *stopoffset* variable should be set such that the high temperature data points, where the $S_{21}$-fits go wrong, are not included in the analysis. This can be done by setting it to 0 first, after which the threshold can be determined from the generated .png-images and the script can be run again. The results are stored in .cvs-files in the same folder (e.g. **A1A2/S21/2D/KID2_99dBm_Tdep.csv**)
+1. The PSDs need to be calculated from the raw TD noise files. This is done via the function *kidata.noise.do_TDanalysis()*, which takes the chipnumber (e.g. 'A1A2') as only required argument. This must be done for each chip separately. The calculated PSDs are stored in **data/NoiseTDanalyse/TDresults.mat**
+
+2. The KID parameters from the $S_{21}$ measurement need to be calculated. This is done with the MATLAB script *S21analysisV5.m* in the **MATLAB_code** folder. In order to run this properly, the *ChipInfo* variable should be set correctly at the top of the .m-file. This includes: Chipnumber in the path, $T_c$ and Al thickness and width. The scripts loads the *KIDparam.txt*- file, which is in the data folder of the chip, for the Al length for each KID. 
+
+   Furthermore, to calculate the correct responsivities, the *stopoffset* variable should be set such that the high temperature data points, where the $S_{21}$-fits go wrong, are not included in the analysis. The index of the *stopoffset* vector corresponds to the KID number that is processed. Setting this variable can be done by setting it to 0 for every KID first, after which the threshold can be determined from the generated .png-images. Then, run the script again with the appropriate *stopoffset*-vector. The results are stored in .cvs-files in the same folder (e.g. **A1A2/S21/2D/KID2_99dBm_Tdep.csv**)
 
 
 
